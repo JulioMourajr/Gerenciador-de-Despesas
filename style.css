@@ -1,0 +1,134 @@
+/* Cores principais e tema */
+:root {
+    --main-color: #3498db;
+    --accent-color: #2ecc71;
+    --background: #f8f9fa;
+    --text-color: #2c3e50;
+}
+
+/* Estilo geral */
+.stApp {
+    background-color: var(--background);
+    color: var(--text-color);
+}
+
+/* Título principal */
+h1 {
+    color: var(--main-color);
+    font-weight: 700;
+    font-size: 2.5rem !important;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--accent-color);
+    margin-bottom: 30px !important;
+}
+
+/* Subtítulos */
+h2, h3 {
+    color: var(--main-color);
+    font-weight: 600;
+    margin-top: 30px !important;
+}
+
+/* Cartão para o formulário */
+.form-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Botões */
+.stButton button {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 5px !important;
+    padding: 0.5rem 1rem !important;
+    border: none !important;
+    transition: all 0.3s ease;
+}
+
+.stButton button:hover {
+    background-color: #27ae60 !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* DataFrames e tabelas */
+.dataframe {
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.stDataFrame {
+    padding: 1rem 0;
+}
+
+/* Métricas e estatísticas */
+.metric-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin: 0.5rem 0;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.metric-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--main-color);
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: gray;
+}
+
+/* Footer */
+.footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: gray;
+    font-size: 0.8rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+/* Animação suave para elementos */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stMarkdown, .element-container {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Status messages */
+.success-message {
+    background-color: rgba(46, 204, 113, 0.1);
+    border-left: 4px solid var(--accent-color);
+    padding: 10px;
+    border-radius: 0 5px 5px 0;
+    margin: 10px 0;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Atualização flash */
+@keyframes flash {
+    0% { background-color: rgba(46, 204, 113, 0.2); }
+    100% { background-color: transparent; }
+}
+
+.flash-update {
+    animation: flash 2s ease-out;
+}

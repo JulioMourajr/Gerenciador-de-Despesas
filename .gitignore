@@ -1,0 +1,47 @@
+# Ambiente virtual
+venv/
+env/
+ENV/
+.env
+
+# Arquivos de cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# Arquivos de configuração local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos de banco de dados SQLite
+*.sqlite3
+*.db
+
+# Arquivos gerados pelo Streamlit
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+*~.nib
+.*.swp
+
+# Arquivos de IDE e editores
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Arquivos específicos do projeto
+despesas_br.csv
