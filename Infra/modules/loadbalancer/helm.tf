@@ -6,10 +6,10 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace  = "kube-system"
 
   # Add force_update and cleanup options
-  force_update    = true
+  force_update    = false
   cleanup_on_fail = true
   atomic          = true
-  timeout         = 900 # Increased timeout
+  timeout         = 500 # Increased timeout
 
   values = [
     yamlencode({
