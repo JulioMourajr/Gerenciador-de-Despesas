@@ -14,3 +14,9 @@ module "nodegroup" {
   subnet_private1a = module.rede.aws_subnet_privada_a_id
   subnet_private1b = module.rede.aws_subnet_privada_b_id
 }
+
+module "loadbalancer" {
+  source              = "./modules/loadbalancer"
+  eks_cluster_name    = module.clusterk8s.eks_cluster_name
+  eks_cluster_oidc_id = module.clusterk8s.oidc_id
+}
