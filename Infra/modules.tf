@@ -20,3 +20,10 @@ module "loadbalancer" {
   eks_cluster_name    = module.clusterk8s.eks_cluster_name
   eks_cluster_oidc_id = module.clusterk8s.oidc_id
 }
+
+module "app" {
+  source    = "./modules/app"
+  namespace = "aplicacao"
+  app_name  = "aplicacao"
+  app_image = "juliomourajr92/gerenciador-despesas:1.0"
+}
