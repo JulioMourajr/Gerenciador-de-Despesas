@@ -19,7 +19,7 @@ on:
       confirm_destroy:
         description: 'Digite YES para confirmar a destruição'
         type: string
-        required: false
+        required: true
         default: 'NO'
 
 jobs:
@@ -27,6 +27,11 @@ jobs:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'apply'
+    environment: featureActions
+    permissions:
+      contents: read
+      id-token: write
+    
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
@@ -91,7 +96,7 @@ jobs:
       github.event.inputs.confirm_destroy == 'YES'
     environment: 
       name: featureActions
-      url: ${{ github.server_url }}/${{ github.repository }}/environments/featureActions
+      url: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/ci-cd.yaml
     permissions:
       contents: read
       id-token: write
