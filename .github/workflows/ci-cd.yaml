@@ -2,35 +2,22 @@ name: CI/CD com Docker e Terraform
 
 on:
   push:
-    branches:
-      - featureActions
-  pull_request:
-    branches:
-      - featureActions
+    branches: [ featureActions ]
   workflow_dispatch:
     inputs:
       action:
-        description: 'Ação a ser executada'
-        type: choice
+        description: 'Terraform action'
         required: true
+        default: 'apply'
+        type: choice
         options:
           - apply
           - destroy
-      confirm_destroy:
-        description: 'Digite YES para confirmar a destruição'
-        type: string
-        required: true
-        default: 'NO'
 
 jobs:
   ci-cd-apply:
-    name: Deploy Infrastructure
+    name: Terraform Plan & Apply/Destroy
     runs-on: ubuntu-latest
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'apply'
-    environment: featureActions
-    permissions:
-      contents: read
-      id-token: write
     
     steps:
       - name: Checkout do repositório
@@ -82,80 +69,20 @@ jobs:
           terraform plan -out=tfplan.out \
             -var="app_image=${{ steps.build-image.outputs.image_tag }}"
 
-      - name: Aplicar Terraform
+      - name: Terraform Apply (on push or manual)
+        if: github.event_name == 'push' || github.event.inputs.action == 'apply'
         run: |
           cd Infra
           terraform apply -auto-approve tfplan.out
 
-  destroy-manual:
-    name: Destroy Infrastructure
-    runs-on: ubuntu-latest
-    if: github.event.inputs.action == 'destroy'
-    environment: 
-      name: featureActions
-      url: ${{ github.server_url }}/${{ github.repository }}/environments/featureActions
-    permissions:
-      contents: read
-      id-token: write
-      actions: read
-      deployments: write
-    concurrency:
-      group: 'destroy-manual'
-      cancel-in-progress: true
-    
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-
-      - name: Verificar confirmação
-        run: |
-          if [ "${{ github.event.inputs.confirm_destroy }}" != "YES" ]; then
-            echo "::error::Destruição não confirmada. Digite 'YES' para confirmar."
-            exit 1
-          fi
-          echo "⚠️ Confirmação recebida. Prosseguindo com a destruição..."
-
-      - name: Configurar Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Configurar credenciais AWS
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Inicializar Terraform
+      - name: Terraform Destroy (manual only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
         run: |
           cd Infra
-          terraform init \
-            -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
-            -backend-config="key=github/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
-
-      - name: Planejar destruição
-        id: plan
-        run: |
-          cd Infra
-          echo "🔍 Gerando plano de destruição..."
-          terraform plan -destroy -out=destroy.tfplan \
+          # Primeiro destruir o módulo app
+          terraform destroy -auto-approve -target=module.app \
             -var="app_image=${{ vars.DOCKER_USERNAME }}/gerenciador-despesas:latest"
-
-      - name: Destruir a infraestrutura
-        if: success()
-        run: |
-          cd Infra
-          echo "🚨 Iniciando destruição da infraestrutura..."
-          echo "⚠️ Última chance de cancelar (10 segundos)..."
-          sleep 10
-          terraform apply -auto-approve destroy.tfplan
-
-      - name: Verificar destruição
-        if: success()
-        run: |
-          cd Infra
-          if terraform show; then
-            echo "✅ Infraestrutura destruída com sucesso!"
-          else
-            echo "::warning::Verifique se todos os recursos foram destruídos corretamente."
-          fi
+          
+          # Depois destruir o resto da infraestrutura
+          terraform destroy -auto-approve \
+            -var="app_image=${{ vars.DOCKER_USERNAME }}/gerenciador-despesas:latest"
