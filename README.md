@@ -109,6 +109,26 @@ O aplicativo já vem com categorias básicas, mas você pode adicionar novas cat
 
 Você pode personalizar a aparência do aplicativo modificando o arquivo `style.css`. O aplicativo aplica automaticamente os estilos quando carregado.
 
+## 🌐 Infraestrutura e CI/CD
+Este projeto utiliza Terraform para gerenciar a infraestrutura na nuvem e GitHub Actions para automatizar o processo de Integração e Entrega Contínua (CI/CD), garantindo que a aplicação seja implantada de forma consistente e eficiente a cada nova alteração.
+
+Terraform
+A infraestrutura para hospedar a aplicação é descrita em arquivos Terraform. Isso permite que o ambiente seja provisionado e gerenciado de forma declarativa e automatizada, garantindo a consistência e a replicabilidade da infraestrutura. A estrutura de código está organizada em módulos para melhor reuso e manutenção.
+
+GitHub Actions (CI/CD)
+O pipeline de CI/CD é configurado no arquivo de workflow do GitHub Actions. Ele é acionado automaticamente a cada push no branch main e executa os seguintes passos:
+
+Construção da Imagem Docker: O pipeline constrói uma nova imagem Docker da aplicação. A imagem é taggeada com o hash do commit para garantir uma versão única e também com a tag latest.
+
+Push para o Docker Hub: As imagens recém-construídas são enviadas para o Docker Hub.
+
+Deploy com Terraform: O Terraform é executado para aplicar as mudanças de infraestrutura. Ele utiliza a nova tag da imagem Docker, garantindo que o serviço seja atualizado com a versão mais recente da aplicação.
+
+Backend Remoto: O estado do Terraform é armazenado em um bucket S3, garantindo que o estado da infraestrutura seja persistente e compartilhado de forma segura entre as execuções do pipeline.
+
+Destruição da Infraestrutura
+A remoção da infraestrutura (terraform destroy) é um processo manual. O pipeline de CI/CD foi configurado para que a destruição dos recursos só possa ser acionada através de um comando manual no GitHub Actions, evitando a remoção acidental da infraestrutura em produção.
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para detalhes.
