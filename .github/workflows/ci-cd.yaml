@@ -50,18 +50,18 @@ jobs:
 
       - name: Inicializar Terraform
         run: |
-          cd ./infra
+          cd /infra
           terraform init -backend-config="bucket=devopsarrocha-terraform-bucket2025" -backend-config="key=github/terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}"
       
       - name: Validar e planejar Terraform
         run: |
-          cd ./infra
+          cd /infra
           terraform validate
           terraform plan
 
       - name: Aplicar Terraform
         run: |
-          cd ./infra
+          cd /infra
           terraform apply -auto-approve -var="app_image=${{ steps.build-image.outputs.image_tag }}"
 
   destroy-manual:
@@ -85,11 +85,11 @@ jobs:
 
       - name: Inicializar Terraform
         run: |
-          cd ./infra
+          cd /infra
           terraform init -backend-config="bucket=devopsarrocha-terraform-bucket2025" -backend-config="key=github/terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}"
 
       - name: Destruir a infraestrutura
         run: |
-          cd ./infra
+          cd /infra
           terraform destroy -auto-approve
 
