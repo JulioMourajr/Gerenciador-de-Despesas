@@ -8,6 +8,12 @@ on:
     branches:
       - featureActions
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Digite YES para confirmar a destruição da infraestrutura'
+        required: true
+        type: string
+        default: 'NO'
 
 jobs:
   ci-cd-apply:
@@ -65,12 +71,30 @@ jobs:
 
   destroy-manual:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    environment: featureActions
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'YES'
+    environment: 
+      name: featureActions
+      url: ${{ github.server_url }}/${{ github.repository }}/environments/featureActions
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+      deployments: write
+    concurrency:
+      group: 'destroy-manual'
+      cancel-in-progress: true
     
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
+
+      - name: Verificar confirmação
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "YES" ]; then
+            echo "::error::Destruição não confirmada. Digite 'YES' para confirmar."
+            exit 1
+          fi
+          echo "⚠️ Confirmação recebida. Prosseguindo com a destruição..."
 
       - name: Configurar Terraform
         uses: hashicorp/setup-terraform@v3
@@ -85,9 +109,33 @@ jobs:
       - name: Inicializar Terraform
         run: |
           cd Infra
-          terraform init -backend-config="bucket=devopsarrocha-terraform-bucket2025" -backend-config="key=github/terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}"
+          terraform init -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
+                        -backend-config="key=github/terraform.tfstate" \
+                        -backend-config="region=${{ secrets.AWS_REGION }}"
 
-      - name: Destruir a infraestrutura
+      - name: Planejar destruição
+        id: plan
         run: |
           cd Infra
-          terraform destroy -auto-approve -var="app_image=${{ vars.DOCKER_USERNAME }}/gerenciador-despesas:latest"
+          echo "🔍 Gerando plano de destruição..."
+          terraform plan -destroy -out=destroy.tfplan \
+            -var="app_image=${{ vars.DOCKER_USERNAME }}/gerenciador-despesas:latest"
+
+      - name: Destruir a infraestrutura
+        if: success()
+        run: |
+          cd Infra
+          echo "🚨 Iniciando destruição da infraestrutura..."
+          echo "⚠️ Última chance de cancelar (10 segundos)..."
+          sleep 10
+          terraform apply -auto-approve destroy.tfplan
+
+      - name: Verificar destruição
+        if: success()
+        run: |
+          cd Infra
+          if terraform show; then
+            echo "✅ Infraestrutura destruída com sucesso!"
+          else
+            echo "::warning::Verifique se todos os recursos foram destruídos corretamente."
+          fi
