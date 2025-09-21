@@ -90,13 +90,10 @@ jobs:
   destroy-manual:
     name: Destroy Infrastructure
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' && 
-      github.event.inputs.action == 'destroy' && 
-      github.event.inputs.confirm_destroy == 'YES'
+    if: github.event.inputs.action == 'destroy'
     environment: 
       name: featureActions
-      url: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/ci-cd.yaml
+      url: ${{ github.server_url }}/${{ github.repository }}/environments/featureActions
     permissions:
       contents: read
       id-token: write
