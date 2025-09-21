@@ -66,6 +66,7 @@ jobs:
   destroy-manual:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
+    environmentt: featureActions
     
     steps:
       - name: Checkout do código
@@ -89,4 +90,4 @@ jobs:
       - name: Destruir a infraestrutura
         run: |
           cd Infra
-          terraform destroy -auto-approve
+          terraform destroy -auto-approve -var="app_image=${{ vars.DOCKER_USERNAME }}/gerenciador-despesas:latest"
