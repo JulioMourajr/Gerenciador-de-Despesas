@@ -9,15 +9,24 @@ on:
       - featureActions
   workflow_dispatch:
     inputs:
-      confirm:
-        description: 'Digite YES para confirmar a destruição da infraestrutura'
+      action:
+        description: 'Ação a ser executada'
+        type: choice
         required: true
+        options:
+          - apply
+          - destroy
+      confirm_destroy:
+        description: 'Digite YES para confirmar a destruição'
         type: string
+        required: false
         default: 'NO'
 
 jobs:
   ci-cd-apply:
+    name: Deploy Infrastructure
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'apply'
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
@@ -56,13 +65,17 @@ jobs:
       - name: Inicializar Terraform
         run: |
           cd Infra
-          terraform init -backend-config="bucket=devopsarrocha-terraform-bucket2025" -backend-config="key=github/terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}"
+          terraform init \
+            -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
+            -backend-config="key=github/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}"
       
       - name: Validar e planejar Terraform
         run: |
           cd Infra
           terraform validate
-          terraform plan -out=tfplan.out -var="app_image=${{ steps.build-image.outputs.image_tag }}"
+          terraform plan -out=tfplan.out \
+            -var="app_image=${{ steps.build-image.outputs.image_tag }}"
 
       - name: Aplicar Terraform
         run: |
@@ -70,8 +83,12 @@ jobs:
           terraform apply -auto-approve tfplan.out
 
   destroy-manual:
+    name: Destroy Infrastructure
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'YES'
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.action == 'destroy' && 
+      github.event.inputs.confirm_destroy == 'YES'
     environment: 
       name: featureActions
       url: ${{ github.server_url }}/${{ github.repository }}/environments/featureActions
@@ -90,7 +107,7 @@ jobs:
 
       - name: Verificar confirmação
         run: |
-          if [ "${{ github.event.inputs.confirm }}" != "YES" ]; then
+          if [ "${{ github.event.inputs.confirm_destroy }}" != "YES" ]; then
             echo "::error::Destruição não confirmada. Digite 'YES' para confirmar."
             exit 1
           fi
@@ -109,9 +126,10 @@ jobs:
       - name: Inicializar Terraform
         run: |
           cd Infra
-          terraform init -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
-                        -backend-config="key=github/terraform.tfstate" \
-                        -backend-config="region=${{ secrets.AWS_REGION }}"
+          terraform init \
+            -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
+            -backend-config="key=github/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}"
 
       - name: Planejar destruição
         id: plan
