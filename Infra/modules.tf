@@ -25,5 +25,5 @@ module "app" {
   source    = "./modules/app"
   namespace = "aplicacao"
   app_name  = "aplicacao"
-  app_image = "juliomourajr92/gerenciador-despesas:1.0"
+  app_image = var.app_image
 }

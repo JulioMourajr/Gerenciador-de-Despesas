@@ -29,12 +29,11 @@ jobs:
       - name: Construir imagem Docker e fazer push
         id: build-image
         run: |
-          IMAGE_TAG=$(date +%Y%m%d%H%M%S)-${{ github.sha }}
+          IMAGE_TAG=$(date +%d%m%Y%H%M)-${{ github.sha }}
           DOCKER_IMAGE_URL="${{ vars.DOCKER_USERNAME }}/gerenciador-despesas"
-          
-          docker build -t $DOCKER_IMAGE_URL:$IMAGE_TAG -t $DOCKER_IMAGE_URL:latest .
+
+          docker build -t $DOCKER_IMAGE_URL:$IMAGE_TAG .
           docker push $DOCKER_IMAGE_URL:$IMAGE_TAG
-          docker push $DOCKER_IMAGE_URL:latest
 
           echo "image_tag=$DOCKER_IMAGE_URL:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
