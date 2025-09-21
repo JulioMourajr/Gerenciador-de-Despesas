@@ -12,7 +12,6 @@ on:
 jobs:
   ci-cd-apply:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
@@ -32,8 +31,9 @@ jobs:
           IMAGE_TAG=$(date +%d%m%Y%H%M)-${{ github.sha }}
           DOCKER_IMAGE_URL="${{ vars.DOCKER_USERNAME }}/gerenciador-despesas"
 
-          docker build -t $DOCKER_IMAGE_URL:$IMAGE_TAG .
+          docker build -t $DOCKER_IMAGE_URL:$IMAGE_TAG -t $DOCKER_IMAGE_URL:latest .
           docker push $DOCKER_IMAGE_URL:$IMAGE_TAG
+          docker push $DOCKER_IMAGE_URL:latest
 
           echo "image_tag=$DOCKER_IMAGE_URL:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
@@ -56,12 +56,12 @@ jobs:
         run: |
           cd Infra
           terraform validate
-          terraform plan
+          terraform plan -out=tfplan.out -var="app_image=${{ steps.build-image.outputs.image_tag }}"
 
       - name: Aplicar Terraform
         run: |
           cd Infra
-          terraform apply -auto-approve -var="app_image=${{ steps.build-image.outputs.image_tag }}"
+          terraform apply -auto-approve tfplan.out
 
   destroy-manual:
     runs-on: ubuntu-latest
@@ -91,4 +91,3 @@ jobs:
         run: |
           cd Infra
           terraform destroy -auto-approve
-
