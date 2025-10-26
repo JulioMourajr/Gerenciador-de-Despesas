@@ -8,7 +8,7 @@ resource "aws_eks_node_group" "eks_nodegroup" {
   ]
 
   scaling_config {
-    desired_size = 6 # Reduced size
+    desired_size = 6
     max_size     = 8
     min_size     = 4
   }
@@ -20,11 +20,8 @@ resource "aws_eks_node_group" "eks_nodegroup" {
   lifecycle {
     create_before_destroy = true
   }
-
-  # ...existing depends_on and tags...
 }
 
-# Add random string resource
 resource "random_string" "suffix" {
   length  = 8
   special = false

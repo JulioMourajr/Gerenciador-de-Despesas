@@ -1,0 +1,111 @@
+name: Manual Deploy e Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Ação a ser executada'
+        type: choice
+        required: true
+        options:
+          - apply
+          - destroy
+        default: 'apply'
+      imagem:
+        description: 'Imagem Docker para a aplicação (ex: user/repo:tag)'
+        required: true
+        default: 'juliomourajr92/regressiva:1.5'
+      confirm_destroy:
+        description: 'Para destruir, digite YES'
+        required: false
+        default: 'NO'
+
+jobs:
+  # Job para executar o Terraform Apply
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    # Este job só roda se a ação escolhida for 'apply'
+    if: github.event.inputs.action == 'apply'
+    
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: ./Infra
+        run: |
+          terraform init \
+            -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
+            -backend-config="key=github/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}"
+      
+      - name: Terraform Validate
+        working-directory: ./Infra
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ./Infra
+        run: |
+          terraform plan -out=tfplan.out \
+            -var="app_image=${{ github.event.inputs.imagem }}"
+
+      - name: Terraform Apply
+        working-directory: ./Infra
+        run: terraform apply -auto-approve tfplan.out
+
+  # Job para executar o Terraform Destroy
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    # Este job só roda se a ação for 'destroy' E a confirmação for 'YES'
+    if: github.event.inputs.action == 'destroy' && github.event.inputs.confirm_destroy == 'YES'
+    
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: ./Infra
+        run: |
+          terraform init \
+            -backend-config="bucket=devopsarrocha-terraform-bucket2025" \
+            -backend-config="key=github/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}"
+
+      - name: Terraform Destroy
+        working-directory: ./Infra
+        run: |
+          echo "Destruindo o módulo da aplicação primeiro..."
+          terraform destroy -auto-approve -target=module.app \
+            -var="app_image=${{ github.event.inputs.imagem }}"
+          
+          echo "Destruindo o restante da infraestrutura..."
+          terraform destroy -auto-approve \
+            -var="app_image=${{ github.event.inputs.imagem }}"
+
+      - name: Falha na confirmação do Destroy
+        if: github.event.inputs.confirm_destroy != 'YES'
+        run: |
+          echo "::error::Ação de destruição cancelada. Você precisa digitar 'YES' para confirmar."
+          exit 1
