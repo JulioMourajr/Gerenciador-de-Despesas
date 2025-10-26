@@ -2,7 +2,7 @@ name: CI/CD com Docker e Terraform
 
 on:
   push:
-    branches: [ featureActions ]
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       action:
