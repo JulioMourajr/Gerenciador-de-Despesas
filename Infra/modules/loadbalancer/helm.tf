@@ -9,6 +9,8 @@ resource "helm_release" "aws_load_balancer_controller" {
   force_update    = false
   cleanup_on_fail = true
   atomic          = true
+  wait            = true
+  wait_for_jobs   = true
   timeout         = 500 # Increased timeout
 
   values = [

@@ -8,7 +8,7 @@ resource "kubernetes_ingress_v1" "aplicacao-ingress" {
       "alb.ingress.kubernetes.io/target-type"        = "ip"
       "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}]"
       "alb.ingress.kubernetes.io/healthcheck-path"   = "/"
-      "alb.ingress.kubernetes.io/healthcheck-port"   = "8501"
+      "alb.ingress.kubernetes.io/healthcheck-port"   = "80"
       "alb.ingress.kubernetes.io/load-balancer-name" = "${var.app_name}-alb"
     }
   }

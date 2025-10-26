@@ -15,8 +15,8 @@ resource "kubernetes_service" "aplicacao-service" {
     port {
       name        = "http"
       port        = 80
-      target_port = 8501
+      target_port = 80
     }
-    type = "ClusterIP"
+    type = "NodePort"
   }
 }
