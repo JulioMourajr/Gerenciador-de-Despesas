@@ -3,6 +3,13 @@ name: SCHEDULE TURN-ON
 on:
   workflow_dispatch:
     inputs:
+      actions:
+        type: multiselect
+        description: "Selecione as ações a serem executadas"
+        options:
+          - deploy
+          - build
+          - test
       clients:
         type: multiselect
         description: "Selecione os clientes para Deploy/Build"
