@@ -1,0 +1,31 @@
+name: SCHEDULE TURN-ON
+
+on:
+  workflow_dispatch:
+
+env:
+  DEFAULT_BUILD_BRIDGESTONE: "bridgestone"
+  DEFAULT_BUILD_CARRERA: "carrera"
+  DEFAULT_BUILD_DAF: "daf"
+  DEFAULT_BUILD_DYNAMO: "dynamo"
+  DEFAULT_BUILD_JDREDE: "jdrede"
+  DEFAULT_BUILD_MAN: "man"
+  DEFAULT_BUILD_MICHELIN: "michelin"
+  DEFAULT_BUILD_MULTIMARCAS: "multimarcaspneus"
+  DEFAULT_BUILD_NEWHOLLANDAGRICULTURE: "newhollandagriculture"
+  DEFAULT_BUILD_MERCEDES: "mercedes"
+
+jobs:
+  example_matrix:
+    strategy:
+      matrix:
+        version: [10, 12, 14]
+        os: [ubuntu-latest, windows-latest]
+
+
+    - name: Filter Clients to Deploy/Build
+        id: filter-clients
+        shell: shell
+        run: |
+          echo matrix.os
+          echo matrix.version
