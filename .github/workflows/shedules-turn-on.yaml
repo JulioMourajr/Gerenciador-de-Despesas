@@ -1,20 +1,45 @@
-name: "Example Workflow 1.2"
-
+name: Shared Matrix Example
 on:
+  push:
   workflow_dispatch:
-
-
 jobs:
-  deploy:
-    name: "Deploy ${{ matrix.environment }}"
-    runs-on: ubuntu-24.04
-    strategy:
-      max-parallel: 1
-      fail-fast: true
-      matrix:
-        environment: ["dev", "qa", "prod"]
+  define-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      colors: ${{ steps.colors.outputs.colors }}
     steps:
-      - name: "Deploy ${{ matrix.environment }} step"
-        run: echo "deploying ${ENVIRONMENT}"
+      - name: Define Colors
+        id: colors
+        run: |
+          echo 'colors=["yellow", "orange", "brown"]' >> "$GITHUB_OUTPUT"
+  produce-artifacts:
+    runs-on: ubuntu-latest
+    needs: define-matrix
+    strategy:
+      matrix:
+        color: ${{ fromJson(needs.define-matrix.outputs.colors) }}
+    steps:
+      - name: Define Color
         env:
-          ENVIRONMENT: ${{ matrix.environment }}
+          color: ${{ matrix.color }}
+        run: echo "$color" > color
+      - name: Produce Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.color }}
+          path: color
+  consume-artifacts:
+    runs-on: ubuntu-latest
+    needs:
+      - define-matrix
+      - produce-artifacts
+    strategy:
+      matrix:
+        color: ${{ fromJson(needs.define-matrix.outputs.colors) }}
+    steps:
+      - name: Retrieve Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.color }}
+      - name: Report Color
+        run: cat color
