@@ -21,11 +21,11 @@ jobs:
       matrix:
         version: [10, 12, 14]
         os: [ubuntu-latest, windows-latest]
-
-
-    - name: Filter Clients to Deploy/Build
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Filter Clients to Deploy/Build
         id: filter-clients
-        shell: shell
+        shell: bash
         run: |
-          echo matrix.os
-          echo matrix.version
+          echo ${{ matrix.os }}
+          echo ${{ matrix.version }}
