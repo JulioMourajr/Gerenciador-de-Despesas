@@ -2,30 +2,26 @@ name: SCHEDULE TURN-ON
 
 on:
   workflow_dispatch:
-
-env:
-  DEFAULT_BUILD_BRIDGESTONE: "bridgestone"
-  DEFAULT_BUILD_CARRERA: "carrera"
-  DEFAULT_BUILD_DAF: "daf"
-  DEFAULT_BUILD_DYNAMO: "dynamo"
-  DEFAULT_BUILD_JDREDE: "jdrede"
-  DEFAULT_BUILD_MAN: "man"
-  DEFAULT_BUILD_MICHELIN: "michelin"
-  DEFAULT_BUILD_MULTIMARCAS: "multimarcaspneus"
-  DEFAULT_BUILD_NEWHOLLANDAGRICULTURE: "newhollandagriculture"
-  DEFAULT_BUILD_MERCEDES: "mercedes"
+    inputs:
+      clients:
+        type: multiselect
+        description: "Selecione os clientes para Deploy/Build"
+        options:
+          - bridgestone
+          - carrera
+          - daf
+          - dynamo
+          - jdrede
+          - man
+          - michelin
+          - multimarcaspneus
+          - newhollandagriculture
+          - mercedes
 
 jobs:
   example_matrix:
-    strategy:
-      matrix:
-        version: [10, 12, 14]
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Filter Clients to Deploy/Build
-        id: filter-clients
-        shell: bash
+      - name: Mostrar clientes selecionados
         run: |
-          echo ${{ matrix.os }}
-          echo ${{ matrix.version }}
+          echo "Clientes selecionados: ${{ toJson(inputs.clients) }}"
