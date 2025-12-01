@@ -1,33 +1,62 @@
-name: Matrix testing workflow
+name: SCHEDULE TURN-ON
 
 on:
-  push:
-    branches:
-      - featureSchedule
+  workflow_dispatch:
+    inputs:
+      environments:
+        description: "Select environments to deploy (leave empty for all)"
+        required: false
+        type: string
 
 jobs:
-  test-matrix:
+  deploy-matrix:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 10 
+      fail-fast: false 
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        environment:
+          - bridgestone
+          - carrera
+          - daf
+          - dynamo
+          - jdrede
+          - man
+          - michelin
+          - multimarcaspneus
+          - newhollandagriculture
+          - mercedes
     steps:
-      - name: Print Node version
+      - name: Print deployment info
         run: |
-          echo "================================"
-          echo "Testing with Node.js version: ${{ matrix['node-version'] }}"
-          echo "================================"
+          echo "Starting deployment for: ${{ matrix.environment }}"
+          echo "Timestamp: $(date)"
       
-      - name: Simulate checkout
-        run: echo "Checking out repository..."
-      
-      - name: Simulate setup
-        run: echo "Setting up Node.js ${{ matrix['node-version'] }}..."
-      
-      - name: Simulate install
-        run: echo "Installing dependencies..."
-      
-      - name: Simulate tests
+      - name: Simulate pre-deployment checks
         run: |
-          echo "Running tests with Node.js ${{ matrix['node-version'] }}..."
-          echo "All tests passed!"
+          echo "Running pre-deployment checks for ${{ matrix.environment }}..."
+          sleep 2
+          echo "Pre-deployment checks passed!"
+      
+      - name: Simulate build
+        run: |
+          echo "Building ${{ matrix.environment }}..."
+          sleep 3
+          echo "Build completed!"
+      
+      - name: Simulate deployment
+        run: |
+          echo "Deploying ${{ matrix.environment }}..."
+          sleep 5
+          echo "Deployment successful!"
+      
+      - name: Simulate health check
+        run: |
+          echo "Running health checks for ${{ matrix.environment }}..."
+          sleep 2
+          echo "All health checks passed!"
+      
+      - name: Deployment summary
+        run: |
+          echo "${{ matrix.environment }} deployed successfully!"
+          echo "Completed at: $(date)"
