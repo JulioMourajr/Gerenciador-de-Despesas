@@ -1,0 +1,27 @@
+name: Matrix testing
+description: A workflow to demonstrate matrix builds in GitHub Actions.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select the environment for deployment"
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment:
+          - development
+          - staging
+          - production
+    steps:
+      - name: Print environments
+        run: |
+          echo "Selected environment: ${{ github.event.inputs.environment }}"
+          echo "Matrix environment: ${{ matrix.environment }}"
