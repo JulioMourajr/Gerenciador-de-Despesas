@@ -1,36 +1,33 @@
-name: Matrix testing
+name: Matrix testing workflow
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Select the environment for deployment"
-        required: true
-        type: choice
-        options:
-          - development
-          - staging
-          - production
+  push:
+    branches:
+      - featureSchedule
 
 jobs:
-  deploy:
+  test-matrix:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment:
-          - development
-          - staging
-          - production
+        node-version: [12.x, 14.x, 16.x]
     steps:
-      - name: Print environments
+      - name: Print Node version
         run: |
           echo "================================"
-          echo "Selected environment (input): ${{ github.event.inputs.environment }}"
-          echo "Matrix environment: ${{ matrix.environment }}"
+          echo "Testing with Node.js version: ${{ matrix['node-version'] }}"
           echo "================================"
-          
-      - name: Simulate deployment
+      
+      - name: Simulate checkout
+        run: echo "Checking out repository..."
+      
+      - name: Simulate setup
+        run: echo "Setting up Node.js ${{ matrix['node-version'] }}..."
+      
+      - name: Simulate install
+        run: echo "Installing dependencies..."
+      
+      - name: Simulate tests
         run: |
-          echo "Deploying to ${{ matrix.environment }}..."
-          sleep 3
-          echo "Deployment to ${{ matrix.environment }} completed!"
+          echo "Running tests with Node.js ${{ matrix['node-version'] }}..."
+          echo "All tests passed!"
