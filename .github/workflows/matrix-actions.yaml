@@ -1,4 +1,4 @@
-name: SCHEDULE TURN-ON
+name: SCHEDULE TURN-ON Individual
 
 on:
   workflow_dispatch:
@@ -33,20 +33,29 @@ jobs:
       - name: Check if should deploy
         id: check
         run: |
-          if [ -z "${{ github.event.inputs.environments }}" ] || echo "${{ github.event.inputs.environments }}" | grep -q "${{ matrix.environment }}"; then
+          SELECTED="${{ github.event.inputs.environments }}"
+          CURRENT="${{ matrix.environment }}"
+          
+          if [ -z "$SELECTED" ]; then
             echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "Deploy ALL environments - deploying $CURRENT"
           else
-            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            # Adiciona vírgulas no início e fim para match exato
+            if echo ",$SELECTED," | grep -q ",$CURRENT,"; then
+              echo "should_deploy=true" >> $GITHUB_OUTPUT
+              echo "$CURRENT is in selected list - deploying"
+            else
+              echo "should_deploy=false" >> $GITHUB_OUTPUT
+              echo "$CURRENT is NOT in selected list - skipping"
+            fi
           fi
 
       - name: Print deployment info
         if: steps.check.outputs.should_deploy == 'true'
         run: |
-          echo "================================"
           echo "Starting deployment for: ${{ matrix.environment }}"
           echo "Timestamp: $(date)"
           echo "Selected environments: ${{ github.event.inputs.environments || 'ALL' }}"
-          echo "================================"
       
       - name: Simulate pre-deployment checks
         if: steps.check.outputs.should_deploy == 'true'
@@ -79,7 +88,5 @@ jobs:
       - name: Deployment summary
         if: steps.check.outputs.should_deploy == 'true'
         run: |
-          echo "================================"
           echo "${{ matrix.environment }} deployed successfully!"
           echo "Completed at: $(date)"
-          echo "================================"
