@@ -1,0 +1,73 @@
+name: SCHEDULE TURN-ON
+
+on:
+  workflow_dispatch:
+    inputs:
+      environments:
+        description: |
+          Select environments to deploy (comma-separated, leave empty for all)
+          Available: bridgestone, carrera, daf, dynamo, jdrede, man, michelin, multimarcaspneus, newhollandagriculture, mercedes
+          Example: bridgestone,daf,michelin
+        required: false
+        type: string
+
+jobs:
+  deploy-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 10 
+      fail-fast: false 
+      matrix:
+        environment:
+          - bridgestone
+          - carrera
+          - daf
+          - dynamo
+          - jdrede
+          - man
+          - michelin
+          - multimarcaspneus
+          - newhollandagriculture
+          - mercedes
+    if: |
+      github.event.inputs.environments == '' || 
+      contains(github.event.inputs.environments, matrix.environment)
+    steps:
+      - name: Print deployment info
+        run: |
+          echo "================================"
+          echo "Starting deployment for: ${{ matrix.environment }}"
+          echo "Timestamp: $(date)"
+          echo "Selected environments: ${{ github.event.inputs.environments || 'ALL' }}"
+          echo "================================"
+      
+      - name: Simulate pre-deployment checks
+        run: |
+          echo "Running pre-deployment checks for ${{ matrix.environment }}..."
+          sleep 2
+          echo "Pre-deployment checks passed!"
+      
+      - name: Simulate build
+        run: |
+          echo "Building ${{ matrix.environment }}..."
+          sleep 3
+          echo "Build completed!"
+      
+      - name: Simulate deployment
+        run: |
+          echo "Deploying ${{ matrix.environment }}..."
+          sleep 5
+          echo "Deployment successful!"
+      
+      - name: Simulate health check
+        run: |
+          echo "Running health checks for ${{ matrix.environment }}..."
+          sleep 2
+          echo "All health checks passed!"
+      
+      - name: Deployment summary
+        run: |
+          echo "================================"
+          echo "${{ matrix.environment }} deployed successfully!"
+          echo "Completed at: $(date)"
+          echo "================================"
