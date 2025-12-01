@@ -29,11 +29,18 @@ jobs:
           - multimarcaspneus
           - newhollandagriculture
           - mercedes
-    if: |
-      github.event.inputs.environments == '' || 
-      contains(github.event.inputs.environments, matrix.environment)
     steps:
+      - name: Check if should deploy
+        id: check
+        run: |
+          if [ -z "${{ github.event.inputs.environments }}" ] || echo "${{ github.event.inputs.environments }}" | grep -q "${{ matrix.environment }}"; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Print deployment info
+        if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "================================"
           echo "Starting deployment for: ${{ matrix.environment }}"
@@ -42,30 +49,35 @@ jobs:
           echo "================================"
       
       - name: Simulate pre-deployment checks
+        if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "Running pre-deployment checks for ${{ matrix.environment }}..."
           sleep 2
           echo "Pre-deployment checks passed!"
       
       - name: Simulate build
+        if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "Building ${{ matrix.environment }}..."
           sleep 3
           echo "Build completed!"
       
       - name: Simulate deployment
+        if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "Deploying ${{ matrix.environment }}..."
           sleep 5
           echo "Deployment successful!"
       
       - name: Simulate health check
+        if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "Running health checks for ${{ matrix.environment }}..."
           sleep 2
           echo "All health checks passed!"
       
       - name: Deployment summary
+        if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "================================"
           echo "${{ matrix.environment }} deployed successfully!"
