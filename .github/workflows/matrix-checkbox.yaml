@@ -1,0 +1,160 @@
+name: SCHEDULE TURN-ON Individual checkbox
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_all:
+        description: 'Deploy ALL environments'
+        type: boolean
+        default: false
+      deploy_bridgestone:
+        description: 'Deploy Bridgestone'
+        type: boolean
+        default: false
+      deploy_carrera:
+        description: 'Deploy Carrera'
+        type: boolean
+        default: false
+      deploy_daf:
+        description: 'Deploy DAF'
+        type: boolean
+        default: false
+      deploy_dynamo:
+        description: 'Deploy Dynamo'
+        type: boolean
+        default: false
+      deploy_jdrede:
+        description: 'Deploy JD Rede'
+        type: boolean
+        default: false
+      deploy_man:
+        description: 'Deploy MAN'
+        type: boolean
+        default: false
+      deploy_michelin:
+        description: 'Deploy Michelin'
+        type: boolean
+        default: false
+      deploy_multimarcas:
+        description: 'Deploy Multimarcas'
+        type: boolean
+        default: false
+      deploy_newholland:
+        description: 'Deploy New Holland Agriculture'
+        type: boolean
+        default: false
+      deploy_mercedes:
+        description: 'Deploy Mercedes'
+        type: boolean
+        default: false
+
+jobs:
+  deploy-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 10 
+      fail-fast: false 
+      matrix:
+        environment:
+          - bridgestone
+          - carrera
+          - daf
+          - dynamo
+          - jdrede
+          - man
+          - michelin
+          - multimarcaspneus
+          - newhollandagriculture
+          - mercedes
+    steps:
+      - name: Check if should deploy
+        id: check
+        run: |
+          DEPLOY_ALL="${{ github.event.inputs.deploy_all }}"
+          CURRENT="${{ matrix.environment }}"
+          
+          # Mapeia o nome do ambiente para o input correspondente
+          case "$CURRENT" in
+            bridgestone)
+              SELECTED="${{ github.event.inputs.deploy_bridgestone }}"
+              ;;
+            carrera)
+              SELECTED="${{ github.event.inputs.deploy_carrera }}"
+              ;;
+            daf)
+              SELECTED="${{ github.event.inputs.deploy_daf }}"
+              ;;
+            dynamo)
+              SELECTED="${{ github.event.inputs.deploy_dynamo }}"
+              ;;
+            jdrede)
+              SELECTED="${{ github.event.inputs.deploy_jdrede }}"
+              ;;
+            man)
+              SELECTED="${{ github.event.inputs.deploy_man }}"
+              ;;
+            michelin)
+              SELECTED="${{ github.event.inputs.deploy_michelin }}"
+              ;;
+            multimarcaspneus)
+              SELECTED="${{ github.event.inputs.deploy_multimarcas }}"
+              ;;
+            newhollandagriculture)
+              SELECTED="${{ github.event.inputs.deploy_newholland }}"
+              ;;
+            mercedes)
+              SELECTED="${{ github.event.inputs.deploy_mercedes }}"
+              ;;
+            *)
+              SELECTED="false"
+              ;;
+          esac
+          
+          # Verifica se deve deployar (ALL ou checkbox específico marcado)
+          if [ "$DEPLOY_ALL" == "true" ] || [ "$SELECTED" == "true" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "DEPLOYING $CURRENT (deploy_all=$DEPLOY_ALL, individual=$SELECTED)"
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "SKIPPING $CURRENT (not selected)"
+          fi
+
+      - name: Print deployment info
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "Starting deployment for: ${{ matrix.environment }}"
+          echo "Timestamp: $(date)"
+      
+      - name: Simulate pre-deployment checks
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "Running pre-deployment checks for ${{ matrix.environment }}..."
+          sleep 2
+          echo "Pre-deployment checks passed!"
+      
+      - name: Simulate build
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "Building ${{ matrix.environment }}..."
+          sleep 3
+          echo "Build completed!"
+      
+      - name: Simulate deployment
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "Deploying ${{ matrix.environment }}..."
+          sleep 5
+          echo "Deployment successful!"
+      
+      - name: Simulate health check
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "Running health checks for ${{ matrix.environment }}..."
+          sleep 2
+          echo "All health checks passed!"
+      
+      - name: Deployment summary
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "${{ matrix.environment }} deployed successfully!"
+          echo "Completed at: $(date)"
